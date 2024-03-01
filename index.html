@@ -1,0 +1,160 @@
+<html>
+
+<head>
+
+</head>
+
+<body>
+    <div id="board">
+    </div>
+</body>
+
+</html>
+
+<script>
+    let snakePosition = undefined;
+    let boardSize = 8;
+    function generateBoard() {
+        for (let j = 0; j < boardSize; j++) {
+            let rowDiv = document.createElement("tr");
+            rowDiv.classList.add("row");
+            for (let i = 0; i < boardSize; i++) {
+                let cellDiv = document.createElement("td");
+                cellDiv.classList.add(`cell`);
+                cellDiv.classList.add(`row-${j}`);
+                cellDiv.classList.add(`col-${i}`);
+                rowDiv.appendChild(cellDiv);
+            }
+            board.appendChild(rowDiv);
+        }
+    }
+    generateBoard();
+    let treat;
+    function restartGame() {
+        snakePosition = [[4, 4], [4, 5], [4, 6]];
+        generateSnake();
+        treat = getTreat();
+        generateTreat();
+    }
+    restartGame();
+    function generateSnake() {
+        for (let i = 0; i < snakePosition.length; i++) {
+            let elem = document.getElementsByClassName(`row-${snakePosition[i][0]} col-${snakePosition[i][1]}`);
+            elem?.[0]?.classList.add('snake');
+        }
+    }
+
+    function removeSnakeTail(position){
+        let snakeElem = document.getElementsByClassName(`row-${position[0]} col-${position[1]}`);
+        for(let i=0; i< snakeElem.length; i++){
+            snakeElem[i].classList.remove('snake');
+        }
+    }
+    function random() {
+        return Math.floor(Math.random() * 8);
+    }
+    function getTreat() {
+        let x = random();
+        let y = random();
+        for (let i = 0; i < snakePosition.length; i++) {
+            if (snakePosition[i][0] == x && snakePosition[i][1] == y) {
+                return getTreat();
+            }
+        }
+        return [x, y];
+    }
+    function generateTreat() {
+        let treatElem = document.getElementsByClassName(`row-${treat[0]} col-${treat[1]}`);
+        treatElem[0].classList.add('treat');
+    }
+    function removeTreat(){
+        let treatElem = document.getElementsByClassName(`row-${treat[0]} col-${treat[1]}`);
+        treatElem[0].classList.remove('treat')
+    }
+
+    // generateBoard();
+    // generateSnake();
+    // generateTreat();
+
+    function isValidPosition(position) {
+        console.log("check ", snakePosition, position);
+        for(let i=0;i<snakePosition.length;i++){
+            if(snakePosition[i][0] == position[0] && snakePosition[i][1] ==position[1]){
+                return false;
+            }
+        }
+        if (position[0] == -1 || position[1] == -1 || position[0] == boardSize || position[1] == boardSize) {
+            return false;
+        }
+        return true;
+    }
+    function isSnackMovingBackward(position) {
+        if(snakePosition[1][0] == position[0] && snakePosition[1][1]== position[1]){
+            return true;
+        }
+        return false;
+    }
+    function updateSnakePosition(newPosition) {
+        snakePosition.unshift(newPosition);
+        if(newPosition[0]==treat[0] && newPosition[1] == treat[1]){
+            removeTreat();
+            treat=getTreat();
+            generateTreat();
+        } else {
+            let tail = snakePosition.pop();
+            removeSnakeTail(tail);
+        }
+        console.log(snakePosition);
+        generateSnake();
+        
+    }
+
+    document.addEventListener('keypress', (event) => {
+        let newPosition = undefined;
+        if (event.key == "w") { //top
+            newPosition = [snakePosition[0][0] - 1, snakePosition[0][1]];
+        }
+        if (event.key == "a") { //left
+            newPosition = [snakePosition[0][0], snakePosition[0][1] - 1];
+        }
+        if (event.key == "s") { //bottom
+            newPosition = [snakePosition[0][0] + 1, snakePosition[0][1]];
+        }
+        if (event.key == "d") { //right
+            newPosition = [snakePosition[0][0], snakePosition[0][1] + 1];
+        }
+
+        if(isSnackMovingBackward(newPosition)){
+            newPosition = undefined;
+            alert("snake moving backward");
+        } else if (newPosition && !isValidPosition(newPosition)) {
+            alert("game over");
+            window.location.reload();
+
+        } else if(newPosition){
+            updateSnakePosition(newPosition);
+        }
+    })
+
+
+</script>
+
+<style>
+    .cell {
+        width: 50px;
+        height: 50px;
+        border: 1px solid #000;
+    }
+
+    .snake {
+        background-color: black;
+    }
+
+    .snake-front {
+        /* border-radius: 20px 0px 0px 20px; */
+    }
+
+    .treat {
+        background-color: red;
+    }
+</style>
